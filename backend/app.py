@@ -4,6 +4,8 @@ from data_utils import read_dataset
 from ga_algorithm import GAAlgorithm  
 import json
 import os
+import pandas as pd
+
 app = Flask(__name__)
 CORS(app)
 @app.route("/")
@@ -27,6 +29,20 @@ def serve_static_files(filename):
             
     return "File not found", 404
 
+@app.route("/get_columns", methods=["POST"])
+def get_columns():
+    file = request.files.get("file")
+    if not file:
+        return jsonify({"error": "Please upload a dataset file."}), 400
+    try:
+        df = pd.read_csv(file, nrows=0)
+        columns = list(df.columns)
+        
+        return jsonify({"columns": columns})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
 @app.route("/upload", methods=["POST"])
 def upload_file():
     try:
@@ -37,15 +53,18 @@ def upload_file():
             return jsonify({
                 "error": "Please upload a dataset file and specify the target column."
             }), 400
-
+        get_columns
+        df_header = pd.read_csv(file, nrows=0)
+        if target not in df_header.columns:
+            return jsonify({
+                "error": f"The target column '{target}' does not exist in the uploaded dataset.",
+                "availableColumns": list(df_header.columns)
+            }), 400
+        
+        file.seek(0)
         x, y = read_dataset(file, target)
         
         result = GAAlgorithm.GAOptimize(x, y)
-        output_path = os.path.join(os.path.dirname(__file__), "ga_result.txt")
-        with open(output_path, "w") as f:
-            json.dump(result, f, indent=4)
-
-        
 
         return jsonify({
     "bestFeatures": result["selected_features_indices"],
@@ -60,5 +79,4 @@ def upload_file():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
 
