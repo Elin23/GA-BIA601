@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify,send_file
 from flask_cors import CORS
 from data_utils import read_dataset  
 from ga_algorithm import GAAlgorithm  
+from generate_random_dataset import generate_dataset
 import os
 import pandas as pd
 
@@ -52,7 +53,6 @@ def upload_file():
             return jsonify({
                 "error": "Please upload a dataset file and specify the target column."
             }), 400
-        get_columns
         df_header = pd.read_csv(file, nrows=0)
         if target not in df_header.columns:
             return jsonify({
@@ -79,6 +79,18 @@ def upload_file():
             "error": str(e)
         }), 500
 
+@app.route("/run_ga_direct", methods=["GET"])
+def run_ga_direct():
+    X, y = generate_dataset(num_rows=200, num_cols=40, target_type='binary')
+    result = GAAlgorithm.GAOptimize(X, y)
+    column_names = [f"Feature_{i+1}" for i in range(X.shape[1])]
+    selected_features = [column_names[i] for i in result["selected_features_indices"]]
+    
+    return jsonify({
+        "bestFeatures": selected_features,
+        "time": result["elapsed_time_seconds"],
+        "accuracySelected": result["accuracy"]
+    })
 
 if __name__ == "__main__":
     app.run(debug=True)
