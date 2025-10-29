@@ -1,80 +1,28 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>عميل GA بسيط</title>
+    <title>Genetic Algorithm Project</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <h1>تشغيل الخوارزمية الجينية</h1>
-    <form id="uploadForm">
-        <div>
-            <label for="file">Upload DAta File(CSV/Excel):</label><br>
-            <input type="file" id="file" name="file" accept=".csv, .xlsx" required>
-        </div>
-        <br>
-        <div>
-            <label for="target">Choose Target :</label><br>
-            <input type="text" id="target" name="target" required placeholder="Example Ccolumn">
-        </div>
-        <br>
-        <button type="submit" id="submitBtn">Find Features</button>
-    </form>
+    <nav class="task-bar">
+        <h1 class="logo">Genetic Algorithm</h1>
+        <div class="nav-links">
+            <button class="nav-btn" onclick="loadPage('home.html')">Home</button>
+            <button class="nav-btn" onclick="loadPage('upload.html')">Start</button>
+            
+            </div>
+    </nav>
 
-    <div id="message" style="margin-top: 20px; padding: 10px; border: 1px solid gray;">
-       Result show here
-    </div>
+    <iframe id="main-content" class="content-frame" src="home.html"></iframe>
 
     <script>
-        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            
-            const form = event.target;
-            const formData = new FormData(form);
-            const messageDiv = document.getElementById('message');
-            const submitBtn = document.getElementById('submitBtn');
-            
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'جاري التنفيذ...';
-            messageDiv.style.backgroundColor = '#ffffcc'; // أصفر فاتح
-            messageDiv.style.color = '#333';
-            messageDiv.innerHTML = '<strong>جاري إرسال البيانات...</strong>';
-
-            try {
-                const response = await fetch('http://127.0.0.1:5000/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    
-                    messageDiv.innerHTML = `
-                        <strong>End Ssuccessfully!</strong>
-                        <ul>
-                            <li><strong>Best Features :</strong> ${result.best_features ? result.best_features.join(', ') : 'غير متوفر'}</li>
-                            <li><strong>دقة الأساس (كل الميزات):</strong> ${result.accuracy_all ? result.accuracy_all.toFixed(4) : 'غير متوفر'}</li>
-                            <li><strong>دقة الميزات المختارة:</strong> ${result.accuracy_selected ? result.accuracy_selected.toFixed(4) : 'غير متوفر'}</li>
-                            <li><strong>ملاحظة:</strong> ${result.note || 'لا توجد ملاحظة'}</li>
-                        </ul>
-                    `;
-                } else {
-                    const errorJson = await response.json();
-                    const errorMessage = errorJson.message || errorJson.error || 'خطأ غير معروف في الخادم.';                    
-                    messageDiv.style.backgroundColor = '#ffcccc'; 
-                    messageDiv.style.color = '#cc0000';
-                    messageDiv.innerHTML = `<strong>خطأ في الخادم:</strong> ${errorMessage}`;
-                }
-            } catch (error) {
-                messageDiv.style.backgroundColor = '#ff99cc'; 
-                messageDiv.style.color = '#800000';
-                messageDiv.innerHTML = `<strong>خطأ في الاتصال:</strong> تأكد من تشغيل خادم Flask على <code>http://127.0.0.1:5000</code>`;
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'تشغيل الخوارزمية';
-            }
-        });
+        function loadPage(pageUrl) {
+            document.getElementById('main-content').src = pageUrl;
+        }
     </script>
 </body>
 </html>

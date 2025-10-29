@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GA Results</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="page-content output-page">
+        <h2 class="output-title" style="text-align: center; margin-bottom: 50px;">
+            Your Result using <span class="logo-inline">Genetic Algorithm</span> on your dataset is as follows:
+        </h2>
+
+        <div style="text-align: center; margin-bottom: 40px;">
+            <button id="tryAgainBtn" class="primary-btn">Try Again</button>
+        </div>
+
+        <div class="results-grid">
+            
+            <div class="result-card">
+                <h3>Best Features</h3>
+                <div id="bestFeatures" class="result-value">N/A</div>
+            </div>
+
+            <div class="result-card">
+                <h3>Accuracy</h3>
+                <div id="accuracy" class="result-value">N/A</div>
+            </div>
+
+            <div class="result-card">
+                <h3>Time Elapsed</h3>
+                <div id="timeElapsed" class="result-value">N/A</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="site-footer">
+        <div class="footer-content-wrapper">
+            <div class="footer-logo-section">
+                <img src="dna_logo.png" alt="DNA Logo" class="footer-dna-logo">
+                <div class="footer-logo-text">Genetic Algorithm</div>
+            </div>
+            <div class="footer-info-section">
+                <div class="footer-column">
+                    <p><strong>Location:</strong></p>
+                    <p>Damascus, Syria</p>
+                </div>
+                <div class="footer-column">
+                    <p><strong>University:</strong></p>
+                    <p>Syrian Virtual University</p>
+                </div>
+                <div class="footer-column">
+                    <p><strong>Subject:</strong></p>
+                    <p>intelligent algorithms</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function displayResults() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const dataString = urlParams.get('data');
+            
+            if (!dataString) {
+                document.getElementById('bestFeatures').textContent = 'Error';
+                document.getElementById('accuracy').textContent = 'Error';
+                document.getElementById('timeElapsed').textContent = 'Error';
+                return;
+            }
+
+            try {
+                const results = JSON.parse(decodeURIComponent(dataString));
+                
+                const features = Array.isArray(results.bestFeatures) 
+                    ? results.bestFeatures.join(', ')
+                    : results.bestFeatures || 'N/A';
+                
+                const accuracy = (results.accuracySelected !== undefined && results.accuracySelected !== null)
+                    ? parseFloat(results.accuracySelected).toFixed(2) + ' %' 
+                    : 'N/A';
+                
+                const time = (results.time !== undefined && results.time !== null)
+                    ? parseFloat(results.time).toFixed(2) + ' s' 
+                    : 'N/A';
+                
+                document.getElementById('bestFeatures').textContent = features;
+                document.getElementById('accuracy').textContent = accuracy;
+                document.getElementById('timeElapsed').textContent = time;
+
+            } catch (e) {
+                console.error("Error parsing results data:", e);
+                document.getElementById('bestFeatures').textContent = 'Parse Error';
+            }
+        }
+
+        document.getElementById('tryAgainBtn').addEventListener('click', function() {
+            window.parent.loadPage('upload.html'); 
+        });
+
+        displayResults();
+    </script>
+</body>
+</html>
