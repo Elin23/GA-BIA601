@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify,send_file
 from flask_cors import CORS
 from data_utils import read_dataset  
 from ga_algorithm import GAAlgorithm  
-import json
 import os
 import pandas as pd
 
@@ -63,13 +62,17 @@ def upload_file():
         
         file.seek(0)
         x, y = read_dataset(file, target)
-        
+        feature_names = [col for col in df_header.columns if col != target]
+
         result = GAAlgorithm.GAOptimize(x, y)
 
+        selected_indices = result["selected_features_indices"]
+        selected_features = [feature_names[i] for i in selected_indices if i < len(feature_names)]
+
         return jsonify({
-    "bestFeatures": result["selected_features_indices"],
-    "time": result["elapsed_time_seconds"],
-    "accuracySelected": result["accuracy"]
+            "bestFeatures": selected_features,
+            "time": result["elapsed_time_seconds"],
+            "accuracySelected": result["accuracy"]
         })
     except Exception as e:
         return jsonify({
