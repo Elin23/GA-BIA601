@@ -1,17 +1,25 @@
-import numpy as np
+import pandas as pd
 from ga_algorithm import GAAlgorithm
-from sklearn.datasets import make_classification
-import json
 
-X, y = make_classification(
-    n_samples=500,
-    n_features=40,
-    n_informative=6,
-    n_redundant=2,
-    n_classes=2,
-    random_state=42
-)
+# ======== إعداد الملف والعمود الهدف ========
+file = "patients.csv"      # ضع اسم CSV
+target = "satisfaction"  # ضع اسم العمود الهدف
 
-result = GAAlgorithm.GAOptimize(X, y)
+# قراءة البيانات
+data = pd.read_csv(file)
+X = data.drop(columns=[target])
+y = data[target]
 
-print(json.dumps(result, indent=4))
+# اكتشاف الأعمدة النصية
+cat_features = [i for i, col in enumerate(X.columns) if X[col].dtype == "object" or X[col].dtype.name == "category"]
+
+# ======== تنفيذ خوارزمية GA ========
+result = GAAlgorithm.GAOptimize(X, y, cat_features)
+
+# طباعة النتائج
+print("أفضل كروموسوم:", result["best_chromosome"])
+print("المميزات المختارة:", result["selected_features_indices"])
+print("عدد الميزات:", result["num_selected_features"])
+print("الدقة:", result["accuracy"])
+print("الفيتنس:", result["fitness"])
+print("زمن التنفيذ (ثواني):", result["elapsed_time_seconds"])

@@ -1,12 +1,10 @@
 ﻿import random
-import math
-import time
 import numpy as np
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import cross_val_score, StratifiedKFold
-from sklearn.linear_model import LogisticRegression
+from catboost import CatBoostClassifier, Pool
+from sklearn.model_selection import StratifiedKFold
+import time
 
-
+# ---------- كروموسوم ----------
 class Chromosome:
     def __init__(self, gene_size):
         self.genes = [0] * gene_size
@@ -18,34 +16,38 @@ class Chromosome:
         new_chrom.fitness = self.fitness
         return new_chrom
 
-
+# ---------- خوارزمية GA ----------
 class GAAlgorithm:
     N_SAMPLES = 0
     N_FEATURES = 0
     random_gen = random.Random()
 
     @staticmethod
-    def evaluate(chromosome, X, y):
+    def evaluate(chromosome, X, y, cat_features):
         selected_indices = [i for i, g in enumerate(chromosome.genes) if g == 1]
         num_selected = len(selected_indices)
-
         if num_selected == 0:
             return 0.0, 0.0
 
         X_selected = X[:, selected_indices]
-        scaler = StandardScaler()
-        X_selected = scaler.fit_transform(X_selected)
+
+        # تصحيح فهارس الأعمدة النصية للنسخة المختارة
+        selected_cat_features = [selected_indices.index(i) for i in cat_features if i in selected_indices]
 
         cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-        model = LogisticRegression(max_iter=500)
-        scores = cross_val_score(model, X_selected, y, cv=cv, scoring='accuracy')
-        accuracy = np.mean(scores)
+        accuracies = []
+        for train_idx, test_idx in cv.split(X_selected, y):
+            X_train, X_test = X_selected[train_idx], X_selected[test_idx]
+            y_train, y_test = y[train_idx], y[test_idx]
+            model = CatBoostClassifier(verbose=0, iterations=200, random_state=42)
+            train_pool = Pool(X_train, y_train, cat_features=selected_cat_features)
+            test_pool = Pool(X_test, y_test, cat_features=selected_cat_features)
+            model.fit(train_pool)
+            acc = model.score(test_pool, y_test)
+            accuracies.append(acc)
 
-        feature_penalty = num_selected / GAAlgorithm.N_FEATURES
-        alpha = 0.8
-        beta = 0.2
-
-        fitness = (alpha * accuracy) - (beta * feature_penalty)
+        accuracy = np.mean(accuracies)
+        fitness = accuracy - 0.01 * num_selected
         return fitness, accuracy
 
     @staticmethod
@@ -88,51 +90,38 @@ class GAAlgorithm:
         return best
 
     @staticmethod
-    def GAOptimize(X, y, n_samples=None, n_features=None):
+    def GAOptimize(X, y, cat_features, n_samples=None, n_features=None):
         GAAlgorithm.N_SAMPLES = n_samples or X.shape[0]
         GAAlgorithm.N_FEATURES = n_features or X.shape[1]
 
-        POPULATION_SIZE = 30
-        NGEN = 20
+        POPULATION_SIZE = 20
+        NGEN = 15
         CXPB = 0.5
         TOURN_SIZE = 3
 
         start_time = time.time()
-
         population = GAAlgorithm.init_population(POPULATION_SIZE)
         for ind in population:
-            ind.fitness, _ = GAAlgorithm.evaluate(ind, X, y)
+            ind.fitness, _ = GAAlgorithm.evaluate(ind, X.values, y, cat_features)
 
-        generation_log = []
         bestChromosome = None
-
         for gen in range(NGEN):
             offspring = [GAAlgorithm.tournament_selection(population, TOURN_SIZE) for _ in range(POPULATION_SIZE)]
             for i in range(0, POPULATION_SIZE, 2):
                 if GAAlgorithm.random_gen.random() < CXPB:
                     c1, c2 = GAAlgorithm.crossover_two_point(offspring[i], offspring[i + 1])
                     offspring[i], offspring[i + 1] = c1, c2
-
             for mutant in offspring:
-                GAAlgorithm.mutate_flip_bit(mutant, 1.0 / GAAlgorithm.N_FEATURES)
-                mutant.fitness, _ = GAAlgorithm.evaluate(mutant, X, y)
+                GAAlgorithm.mutate_flip_bit(mutant, 0.1)
+                mutant.fitness, _ = GAAlgorithm.evaluate(mutant, X.values, y, cat_features)
 
             population = offspring
             currentBest = max(population, key=lambda ind: ind.fitness)
             if bestChromosome is None or currentBest.fitness > bestChromosome.fitness:
                 bestChromosome = currentBest
 
-            fits = [ind.fitness for ind in population]
-            generation_log.append({
-                "generation": gen,
-                "avg": float(np.mean(fits)),
-                "std": float(np.std(fits)),
-                "min": float(min(fits)),
-                "max": float(max(fits))
-            })
-
         selectedFeaturesIndices = [i for i, g in enumerate(bestChromosome.genes) if g == 1]
-        _, best_accuracy = GAAlgorithm.evaluate(bestChromosome, X, y)
+        _, best_accuracy = GAAlgorithm.evaluate(bestChromosome, X.values, y, cat_features)
         end_time = time.time()
         elapsed_time = end_time - start_time
 
@@ -142,6 +131,5 @@ class GAAlgorithm:
             "num_selected_features": len(selectedFeaturesIndices),
             "fitness": float(bestChromosome.fitness),
             "accuracy": float(best_accuracy),
-            "elapsed_time_seconds": elapsed_time,
-            "evolution_log": generation_log
+            "elapsed_time_seconds": elapsed_time
         }
