@@ -2,22 +2,16 @@ from flask import Flask, request, jsonify,send_file
 from flask_cors import CORS
 from data_utils import read_dataset  
 from ga_algorithm import GAAlgorithm  
-<<<<<<< HEAD
-import os
-=======
 import json
 import os
 import pandas as pd
 
->>>>>>> 1dbf00b8ca6258c8c6a239432ce27870874dacd3
 app = Flask(__name__)
 CORS(app)
 @app.route("/")
 def index():
     frontend_path = os.path.join(os.path.dirname(__file__), '..', 'frontend', 'index.html')
     return send_file(frontend_path)
-<<<<<<< HEAD
-=======
 
 @app.route("/<filename>")
 def serve_static_files(filename):
@@ -48,7 +42,6 @@ def get_columns():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
->>>>>>> 1dbf00b8ca6258c8c6a239432ce27870874dacd3
 
 @app.route("/upload", methods=["POST"])
 def upload_file():
@@ -73,14 +66,6 @@ def upload_file():
         
         result = GAAlgorithm.GAOptimize(x, y)
 
-<<<<<<< HEAD
-        x, y = read_dataset(file, target)
-        
-        result = GAAlgorithm.GAOptimize(x, y)
-        
-
-=======
->>>>>>> 1dbf00b8ca6258c8c6a239432ce27870874dacd3
         return jsonify({
     "bestFeatures": result["selected_features_indices"],
     "time": result["elapsed_time_seconds"],
@@ -94,8 +79,3 @@ def upload_file():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-<<<<<<< HEAD
-
-=======
->>>>>>> 1dbf00b8ca6258c8c6a239432ce27870874dacd3

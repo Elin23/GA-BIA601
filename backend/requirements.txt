@@ -1,5 +1,6 @@
-flask>=3.0.0
-flask-cors>=4.0.0
-numpy>=1.26.0
-pandas>=2.2.0
-scikit-learn>=1.5.0
+Flask
+flask-cors
+pandas
+numpy
+scikit-learn
+category-encoders
