@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start Upload</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            display: block; 
+            min-height: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="upload-page">
+        <section class="form-section">
+            <h2 class="section-title">GET STARTED</h2>
+            <p class="section-description">Begin your journey with Genetic Algorithms. Follow our simple steps to set up, run your first experiment, and explore how optimization can solve complex challenges.</p>
+
+            <form class="form-container" id="uploadForm">
+                <label for="data-file">Upload Data File:</label>
+                <div class="file-drop-area" id="fileDropArea">
+                    <input type="file" id="data-file" name="data-file" 
+                           accept=".csv, text/csv" 
+                           data-required="true">
+                    <div class="file-placeholder">
+                        <div class="upload-icon"></div>
+                        <span id="filePlaceholderText">Upload file (CSV only)</span>
+                    </div>
+                </div>
+
+                <label for="target-column">Choose target column name:</label>
+                <input type="text" id="target-column" name="target-column" placeholder="Example: target_column" required>
+                
+                <button type="submit" class="primary-btn wide-btn" id="findFeaturesBtn">
+                    Find Features
+                </button>
+
+                <a href="#" class="help-link" id="helpLink">Don't Know How to Start? click here</a>
+            </form>
+        </section>
+    </div>
+
+    <div class="site-footer">
+        <div class="footer-content-wrapper">
+            <div class="footer-logo-section">
+                <img src="dna_logo.png" alt="Genetic Algorithm Logo" class="footer-dna-logo">
+                <div class="footer-logo-text">Genetic Algorithm</div>
+            </div>
+            <div class="footer-info-section">
+                <div class="footer-column">
+                    <p><strong>Location:</strong></p>
+                    <p>Damascus, Syria</p>
+                </div>
+                <div class="footer-column">
+                    <p><strong>University:</strong></p>
+                    <p>Syrian Virtual University</p>
+                </div>
+                <div class="footer-column">
+                    <p><strong>Subject:</strong></p>
+                    <p>intelligent algorithms</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('data-file');
+        const targetInput = document.getElementById('target-column');
+        const findFeaturesBtn = document.getElementById('findFeaturesBtn');
+        const placeholderText = document.getElementById('filePlaceholderText');
+        const dropArea = document.getElementById('fileDropArea');
+        const helpLink = document.getElementById('helpLink');
+
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                dropArea.classList.add('file-loaded');
+                placeholderText.textContent = this.files[0].name;
+            } else {
+                dropArea.classList.remove('file-loaded');
+                placeholderText.textContent = 'Upload file (CSV only)'; 
+            }
+        });
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                findFeaturesBtn.disabled = true;
+                findFeaturesBtn.innerHTML = '<span class="spinner"></span> Running GA...';
+            } else {
+                findFeaturesBtn.disabled = false;
+                findFeaturesBtn.innerHTML = 'Find Features';
+            }
+        }
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (fileInput.files.length === 0) {
+                alert("Please upload a dataset file (CSV)."); 
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('target', targetInput.value);
+
+            setLoading(true);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    const resultsData = {
+                        bestFeatures: data.bestFeatures, 
+                        accuracySelected: (data.accuracySelected * 100), 
+                        time: data.time 
+                    };
+
+                    const encodedData = encodeURIComponent(JSON.stringify(resultsData));
+
+                    window.parent.loadPage('output.html?data=' + encodedData);
+
+                } else {
+                    alert("Error from server: " + (data.error || "An unknown error occurred."));
+                }
+            } catch (error) {
+                console.error('Network or processing error:', error);
+                alert('A network error occurred. Please check the server status.');
+            } finally {
+                setLoading(false);  
+            }
+        });
+        
+        helpLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (window.parent.loadAndScroll) {
+                 window.parent.loadAndScroll('home.html', '#user-guide');
+            } else {
+                 window.parent.loadPage('home.html');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -2,13 +2,53 @@ from flask import Flask, request, jsonify,send_file
 from flask_cors import CORS
 from data_utils import read_dataset  
 from ga_algorithm import GAAlgorithm  
+<<<<<<< HEAD
 import os
+=======
+import json
+import os
+import pandas as pd
+
+>>>>>>> 1dbf00b8ca6258c8c6a239432ce27870874dacd3
 app = Flask(__name__)
 CORS(app)
 @app.route("/")
 def index():
     frontend_path = os.path.join(os.path.dirname(__file__), '..', 'frontend', 'index.html')
     return send_file(frontend_path)
+<<<<<<< HEAD
+=======
+
+@app.route("/<filename>")
+def serve_static_files(filename):
+    if '.' in filename:
+        frontend_dir = os.path.join(os.path.dirname(__file__), '..', 'frontend')
+        filepath = os.path.join(frontend_dir, filename)
+        
+        try:
+            if os.path.exists(filepath):
+                return send_file(filepath)
+            else:
+                return f"<h1>File not found: {filename}</h1>", 404
+        except Exception as e:
+            return f"<h1>Error serving {filename}: {str(e)}</h1>", 500
+            
+    return "File not found", 404
+
+@app.route("/get_columns", methods=["POST"])
+def get_columns():
+    file = request.files.get("file")
+    if not file:
+        return jsonify({"error": "Please upload a dataset file."}), 400
+    try:
+        df = pd.read_csv(file, nrows=0)
+        columns = list(df.columns)
+        
+        return jsonify({"columns": columns})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+>>>>>>> 1dbf00b8ca6258c8c6a239432ce27870874dacd3
 
 @app.route("/upload", methods=["POST"])
 def upload_file():
@@ -20,12 +60,27 @@ def upload_file():
             return jsonify({
                 "error": "Please upload a dataset file and specify the target column."
             }), 400
+        get_columns
+        df_header = pd.read_csv(file, nrows=0)
+        if target not in df_header.columns:
+            return jsonify({
+                "error": f"The target column '{target}' does not exist in the uploaded dataset.",
+                "availableColumns": list(df_header.columns)
+            }), 400
+        
+        file.seek(0)
+        x, y = read_dataset(file, target)
+        
+        result = GAAlgorithm.GAOptimize(x, y)
 
+<<<<<<< HEAD
         x, y = read_dataset(file, target)
         
         result = GAAlgorithm.GAOptimize(x, y)
         
 
+=======
+>>>>>>> 1dbf00b8ca6258c8c6a239432ce27870874dacd3
         return jsonify({
     "bestFeatures": result["selected_features_indices"],
     "time": result["elapsed_time_seconds"],
@@ -40,4 +95,7 @@ def upload_file():
 if __name__ == "__main__":
     app.run(debug=True)
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1dbf00b8ca6258c8c6a239432ce27870874dacd3
