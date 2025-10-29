@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <div class="hero-content">
+        <div class="text-container">
+            <h2 class="hero-title">Solve complex problems efficiently <br> with <span class="highlight">Genetic
+                    Algorithms</span></h2>
+            <p class="hero-subtitle">Leverage the power of evolutionary computation to find optimal solutions faster and
+                smarter, even for the most challenging problems.</p>
+
+            <button onclick="goToNextPage()" class="primary-btn">Get Started</button>
+        </div>
+
+        <div class="image-container">
+        </div>
+    </div>
+
+    <div class="page-content" id="user-guide">
+        <h2 class="section-title" style="text-align: left; margin-top: 80px; margin-bottom: 40px;">USER GUIDE</h2>
+        <p class="section-description" style="text-align: left; margin-bottom: 50px;">Your step-by-step guide to
+            mastering Genetic Algorithms. Learn how to configure parameters, run experiments, and interpret results with
+            clear examples and best practices.</p>
+
+        <div class="guide-steps-container">
+            <div class="step-card">
+                <h3 class="step-title">STEP 01</h3>
+                <p>Upload your dataset in Excel (XLSX) or CSV Load format. Make sure your file is organized in rows and
+                    columns, containing the data you want to extract key features from.</p>
+            </div>
+            <div class="step-card">
+                <h3 class="step-title">STEP 02</h3>
+                <p>Once the file is uploaded, a dropdown menu will appear with the available columns from your dataset.
+                    Choose the target variable you'd like the algorithm to focus on.</p>
+            </div>
+            <div class="step-card">
+                <h3 class="step-title">STEP 03</h3>
+                <p>Click the "Find Features" button to start the process.</p>
+            </div>
+            <div class="step-card">
+                <h3 class="step-title">STEP 04</h3>
+                <p>Wait a few moments while the algorithm analyzes your dataset. The results will be displayed on your
+                    screen once processing is complete.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-content" id="about-ga">
+        <h2 class="section-title" style="text-align: left; margin-top: 80px; margin-bottom: 40px;">About The Algorithm
+        </h2>
+        <p class="section-description" style="text-align: left;">Learn how Genetic Algorithms work and why they are
+            powerful tools for solving optimization problems. Explore the principles of natural selection, mutation, and
+            evolution that drive the algorithm to find the best solutions.</p>
+
+        <div class="about-content-flex">
+            <div class="about-text-content">
+                <p>A Genetic Algorithm (GA) is a search and optimization technique inspired by the process of natural
+                    selection in biology. It mimics evolution by generating a population of possible solutions and
+                    improving them step by step. The main goal is to find the most optimal solution for a given problem.
+                </p>
+                <p>The algorithm works through key processes such as selection, crossover, and mutation. In each
+                    generation, the fittest solutions are chosen, combined, and slightly altered to create new
+                    candidates. Over time, this evolutionary cycle increases the chances of discovering high-quality
+                    solutions.</p>
+                <p>Genetic Algorithms are widely used in fields such as machine learning, engineering, and data science.
+                    They are especially powerful when dealing with complex or large search spaces where traditional
+                    methods struggle. By simulating evolution, GAs provide innovative and efficient ways to solve
+                    real-world challenges.</p>
+            </div>
+            <div class="about-image-container">
+            </div>
+        </div>
+    </div>
+
+    <div class="site-footer">
+        <div class="footer-content-wrapper">
+            <div class="footer-logo-section">
+                <img src="dna_logo.png" alt="DNA Logo" class="footer-dna-logo">
+                <div class="footer-logo-text">Genetic Algorithm</div>
+            </div>
+            <div class="footer-info-section">
+                <div class="footer-column">
+                    <p><strong>Location:</strong></p>
+                    <p>Damascus, Syria</p>
+                </div>
+                <div class="footer-column">
+                    <p><strong>University:</strong></p>
+                    <p>Syrian Virtual University</p>
+                </div>
+                <div class="footer-column">
+                    <p><strong>Subject:</strong></p>
+                    <p>intelligent algorithms</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function goToNextPage() {
+            window.parent.loadPage('upload.html');
+        }
+    </script>
+</body>
+
+</html>
