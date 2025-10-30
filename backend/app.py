@@ -69,7 +69,7 @@ def upload_file():
         result = GAAlgorithm.GAOptimize(x, y)
         embded=EmbeddedMethod.run(x,y)
         lasso=LassoAlgorithm.LassoOptimize(x,y)
-        statsf=StatsFeatureSelection.correlation_selection(x,y)
+        statsf=statsf = StatsFeatureSelection.correlation_selection(x, y, top_k=10)
         selected_indices = result["selected_features_indices"]
         selected_features = [feature_names[i] for i in selected_indices if i < len(feature_names)]
 
@@ -112,6 +112,7 @@ def upload_file():
             f.write(f"Elapsed time (s): {lasso.get('elapsed_time_seconds', 0):.4f}\n\n")
 
             #  Statistical Feature Selection (Correlation)
+            statsf = StatsFeatureSelection.correlation_selection(x, y, top_k=10)
             stats_indices = statsf.get("selected_features_indices", [])
             stats_features = [feature_names[i] for i in stats_indices if i < len(feature_names)]
             f.write("=== Statistical Feature Selection (Correlation) ===\n")

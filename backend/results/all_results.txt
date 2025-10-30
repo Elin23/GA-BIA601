@@ -1,31 +1,31 @@
 ========== FEATURES SELECTION RESULTS ==========
 
 === Genetic Algorithm (GA) ===
-Selected feature indices: [0, 6, 10, 12]
-Selected feature names: ['Alcohol', 'Flavanoids', 'Hue', 'Proline']
-Number of selected features: 4
-Accuracy: 0.9717
-Elapsed time (s): 16.8125
+Selected feature indices: [0, 1]
+Selected feature names: ['Study Hours', 'Previous Exam Score']
+Number of selected features: 2
+Accuracy: 0.8700
+Elapsed time (s): 21.4823
 
 === Embedded Method ===
-Selected feature indices: [9, 6, 12, 0, 10, 11, 5, 4, 1, 8, 3, 2, 7]
-Selected feature names: ['Color.int', 'Flavanoids', 'Proline', 'Alcohol', 'Hue', 'OD', 'Phenols', 'Mg', 'Malic.acid', 'Proanth', 'Acl', 'Ash', 'Nonflavanoid.phenols']
-Number of selected features: 13
-Accuracy: 0.9722
-Elapsed time (s): 0.9494
+Selected feature indices: [0, 1]
+Selected feature names: ['Study Hours', 'Previous Exam Score']
+Number of selected features: 2
+Accuracy: 0.8700
+Elapsed time (s): 0.9060
 
 === Lasso Algorithm ===
-Selected feature indices: [0, 1, 2, 3, 6, 11, 12]
-Selected feature names: ['Alcohol', 'Malic.acid', 'Ash', 'Acl', 'Flavanoids', 'OD', 'Proline']
-Number of selected features: 7
-Accuracy: 0.9832
-Elapsed time (s): 0.1239
+Selected feature indices: [0, 1]
+Selected feature names: ['Study Hours', 'Previous Exam Score']
+Number of selected features: 2
+Accuracy: 0.8700
+Elapsed time (s): 0.1884
 
 === Statistical Feature Selection (Correlation) ===
-Selected feature indices: [0, 1, 7, 8, 3, 10, 12, 5, 11, 6]
-Selected feature names: ['Alcohol', 'Malic.acid', 'Nonflavanoid.phenols', 'Proanth', 'Acl', 'Hue', 'Proline', 'Phenols', 'OD', 'Flavanoids']
-Number of selected features: 10
-Accuracy: 0.0000
-Elapsed time (s): 0.0126
+Selected feature indices: [0, 1]
+Selected feature names: ['Study Hours', 'Previous Exam Score']
+Number of selected features: 2
+Accuracy: 0.5282
+Elapsed time (s): 0.0269
 
 ========== END OF RESULTS ==========
