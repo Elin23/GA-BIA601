@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genetic Algorithm Project</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <nav class="task-bar">
+        <h1 class="logo">Genetic Algorithm</h1>
+        <div class="nav-links">
+            <button class="nav-btn" onclick="loadPage('home.html')">Home</button>
+            <button class="nav-btn" onclick="loadPage('upload.html')">Start</button>
+            
+            </div>
+    </nav>
+
+    <iframe id="main-content" class="content-frame" src="home.html"></iframe>
+
+    <script>
+        function loadPage(pageUrl) {
+            document.getElementById('main-content').src = pageUrl;
+        }
+    </script>
+</body>
+</html>
