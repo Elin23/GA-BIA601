@@ -81,7 +81,7 @@ def upload_file():
 
 @app.route("/run_ga_direct", methods=["GET"])
 def run_ga_direct():
-    X, y = generate_dataset(num_rows=200, num_cols=40, target_type='binary')
+    X, y = generate_dataset()
     result = GAAlgorithm.GAOptimize(X, y)
     column_names = [f"Feature_{i+1}" for i in range(X.shape[1])]
     selected_features = [column_names[i] for i in result["selected_features_indices"]]
