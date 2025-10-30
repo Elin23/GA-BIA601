@@ -94,4 +94,3 @@ def run_ga_direct():
 
 if __name__ == "__main__":
     app.run(debug=True)
-

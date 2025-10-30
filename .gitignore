@@ -1,4 +1,44 @@
+<<<<<<< HEAD
 "__pycache__/" 
 "*.pyc" 
 "venv/" 
 "__pycache__/" 
+=======
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.env/
+.venv/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE settings
+.vscode/
+.idea/
+
+# Python build artifacts
+build/
+dist/
+*.egg-info/
+
+# Environment variables
+.env
+
+# Frontend build (if applicable)
+frontend/node_modules/
+frontend/build/
+>>>>>>> b3c13c00b65e089864ea6069c53eeaf4431a1aae
