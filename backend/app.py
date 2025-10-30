@@ -2,10 +2,12 @@ from flask import Flask, request, jsonify,send_file
 from flask_cors import CORS
 from data_utils import read_dataset  
 from ga_algorithm import GAAlgorithm  
+from traditional_algorithms.embedded_method import EmbeddedMethod
+from traditional_algorithms.lasso_method import LassoAlgorithm
+from statistical_techniques.statistical_techniques import StatsFeatureSelection
 from generate_random_dataset import generate_dataset
 import os
 import pandas as pd
-
 app = Flask(__name__)
 CORS(app)
 @app.route("/")
@@ -65,9 +67,61 @@ def upload_file():
         feature_names = [col for col in df_header.columns if col != target]
 
         result = GAAlgorithm.GAOptimize(x, y)
-
+        embded=EmbeddedMethod.run(x,y)
+        lasso=LassoAlgorithm.LassoOptimize(x,y)
+        statsf=StatsFeatureSelection.correlation_selection(x,y)
         selected_indices = result["selected_features_indices"]
         selected_features = [feature_names[i] for i in selected_indices if i < len(feature_names)]
+
+        #just for testing results
+
+        results_dir = os.path.join(os.path.dirname(__file__), "results")
+        os.makedirs(results_dir, exist_ok=True)
+        result_path = os.path.join(results_dir, "all_results.txt")
+        with open(result_path, "w", encoding="utf-8") as f:
+            f.write("========== FEATURES SELECTION RESULTS ==========\n\n")
+
+            # GA Algorithm
+            ga_indices = result.get("selected_features_indices", [])
+            ga_features = [feature_names[i] for i in ga_indices if i < len(feature_names)]
+            f.write("=== Genetic Algorithm (GA) ===\n")
+            f.write(f"Selected feature indices: {ga_indices}\n")
+            f.write(f"Selected feature names: {ga_features}\n")
+            f.write(f"Number of selected features: {result.get('num_selected_features', 'N/A')}\n")
+            f.write(f"Accuracy: {result.get('accuracy', 0):.4f}\n")
+            f.write(f"Elapsed time (s): {result.get('elapsed_time_seconds', 0):.4f}\n\n")
+
+            #  Embedded Method
+            emb_indices = embded.get("selected_features_indices", [])
+            emb_features = [feature_names[i] for i in emb_indices if i < len(feature_names)]
+            f.write("=== Embedded Method ===\n")
+            f.write(f"Selected feature indices: {emb_indices}\n")
+            f.write(f"Selected feature names: {emb_features}\n")
+            f.write(f"Number of selected features: {embded.get('num_selected_features', 'N/A')}\n")
+            f.write(f"Accuracy: {embded.get('accuracy', 0):.4f}\n")
+            f.write(f"Elapsed time (s): {embded.get('elapsed_time_seconds', 0):.4f}\n\n")
+
+            #  Lasso Algorithm
+            lasso_indices = lasso.get("selected_features_indices", [])
+            lasso_features = [feature_names[i] for i in lasso_indices if i < len(feature_names)]
+            f.write("=== Lasso Algorithm ===\n")
+            f.write(f"Selected feature indices: {lasso_indices}\n")
+            f.write(f"Selected feature names: {lasso_features}\n")
+            f.write(f"Number of selected features: {lasso.get('num_selected_features', 'N/A')}\n")
+            f.write(f"Accuracy: {lasso.get('accuracy', 0):.4f}\n")
+            f.write(f"Elapsed time (s): {lasso.get('elapsed_time_seconds', 0):.4f}\n\n")
+
+            #  Statistical Feature Selection (Correlation)
+            stats_indices = statsf.get("selected_features_indices", [])
+            stats_features = [feature_names[i] for i in stats_indices if i < len(feature_names)]
+            f.write("=== Statistical Feature Selection (Correlation) ===\n")
+            f.write(f"Selected feature indices: {stats_indices}\n")
+            f.write(f"Selected feature names: {stats_features}\n")
+            f.write(f"Number of selected features: {statsf.get('num_selected_features', 'N/A')}\n")
+            f.write(f"Accuracy: {statsf.get('accuracy', 0):.4f}\n")
+            f.write(f"Elapsed time (s): {statsf.get('elapsed_time_seconds', 0):.4f}\n\n")
+
+            f.write("========== END OF RESULTS ==========\n")
 
         return jsonify({
             "bestFeatures": selected_features,
