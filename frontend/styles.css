@@ -9,9 +9,9 @@
     --deep-purple: #1e1e4a;
     --light-blue-button: #8a96c9;
     --light-blue-button-hover: #a1aecb;
-    --spinner-color: #000000; 
-    --footer-background: #1e1e4a; 
-    --footer-border-color: #3b3b6b; 
+    --spinner-color: #000000;
+    --footer-background: #1e1e4a;
+    --footer-border-color: #3b3b6b;
 }
 html, body {
     margin: 0;
@@ -24,15 +24,46 @@ body {
     color: var(--text-light);
     direction: ltr;
     min-height: 100vh;
-    display: flex; 
-    flex-direction: column; 
-    overflow-y: auto; 
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
 }
+/* Styles from <style> tag in HTML */
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    overflow-y: auto;
+}
+.select-dropdown {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 8px 0 10px 0;
+    display: inline-block;
+    border: 1px solid #4a4a6e;
+    border-radius: 6px;
+    box-sizing: border-box;
+    background-color: #3b3b5c;
+    color: #ffffff;
+    font-size: 16px;
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M287%20159.2c-2.4%202.4-5.5%203.6-8.7%203.6s-6.3-1.2-8.7-3.6L146.2%2042.8%2020.2%20159.2c-4.8%204.8-12.5%204.8-17.3%200s-4.8-12.5%200-17.3l134.4-134.4c4.8-4.8%2012.5-4.8%2017.3%200l134.4%20134.4c4.8%204.8%204.8%2012.5%200%2017.3z%22%20transform%3D%22rotate(180%20146.2%20146.2)%22%2F%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 10px top 50%;
+    background-size: 12px;
+    cursor: pointer;
+}
+.select-dropdown:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+/* End of <style> tag styles */
+
 
 .content-frame {
     border: none;
     width: 100%;
-    height: 100%; 
+    height: 100%;
     display: block;
     margin: 0;
     flex-grow: 1;
@@ -47,10 +78,10 @@ body {
     background-color: #1a1a3a;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     height: 50px;
-    position: sticky; 
+    position: sticky;
     top: 0;
     z-index: 1000;
-    flex-shrink: 0; 
+    flex-shrink: 0;
 }
 
 .logo {
@@ -126,7 +157,7 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 0 5vw;
-    min-height: calc(100vh - 120px); 
+    min-height: calc(100vh - 120px);
     text-align: left;
     gap: 30px;
     flex-direction: row;
@@ -170,7 +201,7 @@ body {
     align-items: flex-start;
     padding-top: 50px;
     box-sizing: border-box;
-    min-height: calc(100vh - 120px); 
+    min-height: calc(100vh - 120px);
 }
 
 .form-section {
@@ -235,7 +266,7 @@ body {
     justify-content: center;
     color: #bdbdbd;
     font-size: 1.1em;
-    min-height: 80px; 
+    min-height: 80px;
 }
 
 .file-loaded .upload-icon {
@@ -243,7 +274,7 @@ body {
 }
 
 .file-loaded #filePlaceholderText {
-    display: block; 
+    display: block;
     color: var(--text-highlight);
     font-weight: bold;
     font-size: 1.2em;
@@ -347,7 +378,7 @@ input[type="text"], select {
 
 .spinner {
     border: 4px solid rgba(255, 255, 255, 0.3);
-    border-top: 4px solid var(--spinner-color); 
+    border-top: 4px solid var(--spinner-color);
     border-radius: 50%;
     width: 20px;
     height: 20px;
@@ -373,11 +404,11 @@ input[type="text"], select {
 .site-footer {
     background-color: var(--footer-background);
     color: var(--text-light);
-    padding: 40px 5vw; 
+    padding: 40px 5vw;
     border-top: 1px solid var(--footer-border-color);
     width: 100%;
     box-sizing: border-box;
-    margin-top: 50px; 
+    margin-top: 50px;
 }
 
 .footer-content-wrapper {
@@ -386,19 +417,19 @@ input[type="text"], select {
     align-items: center;
     max-width: 1200px;
     margin: 0 auto;
-    flex-wrap: wrap; 
+    flex-wrap: wrap;
 }
 
 .footer-logo-section {
     display: flex;
     align-items: center;
-    margin-right: 50px; 
-    flex-shrink: 0; 
-    min-width: 200px; 
+    margin-right: 50px;
+    flex-shrink: 0;
+    min-width: 200px;
 }
 
 .footer-dna-logo {
-    width: 50px; 
+    width: 50px;
     height: auto;
     margin-right: 15px;
 }
@@ -411,11 +442,11 @@ input[type="text"], select {
 
 .footer-info-section {
     display: flex;
-    flex-wrap: wrap; 
-    gap: 20px 40px; 
+    flex-wrap: wrap;
+    gap: 20px 40px;
     font-size: 0.9em;
-    flex-grow: 1; 
-    justify-content: flex-end; 
+    flex-grow: 1;
+    justify-content: flex-end;
 }
 
 .footer-column p {
@@ -440,8 +471,8 @@ input[type="text"], select {
     background-color: var(--card-background);
     padding: 25px;
     border-radius: 10px;
-    flex: 1; 
-    min-width: 220px; 
+    flex: 1;
+    min-width: 220px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     border-top: 4px solid var(--text-highlight);
 }
@@ -476,7 +507,7 @@ input[type="text"], select {
     flex-shrink: 0;
     width: 300px;
     height: 350px;
-    background-image: url('GEN_ALGO_SMALL.png'); 
+    background-image: url('GEN_ALGO_SMALL.png');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
@@ -511,7 +542,7 @@ input[type="text"], select {
     }
 
     .guide-steps-container {
-        flex-direction: column; /* البطاقات ستظهر فوق بعضها في الشاشات الصغيرة */
+        flex-direction: column;
     }
 
     .about-content-flex {
@@ -525,7 +556,7 @@ input[type="text"], select {
     .about-image-container {
         width: 100%;
         height: 250px;
-        order: -1; 
+        order: -1;
         margin-bottom: 20px;
     }
 }
