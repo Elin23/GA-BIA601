@@ -6,6 +6,30 @@
     <title>Start Upload</title>
     <link rel="stylesheet" href="styles.css">
     <style>
+        /* إضافة ستايل بسيط للقائمة المنسدلة لتكون مشابهة لزر Find Features */
+        .select-dropdown {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 8px 0 10px 0; /* 📌 التعديل الأول: تقليص الهامش السفلي */
+            display: inline-block;
+            border: 1px solid #4a4a6e; /* لون مشابه للخلفية الداكنة */
+            border-radius: 6px;
+            box-sizing: border-box;
+            background-color: #3b3b5c; /* خلفية داكنة */
+            color: #ffffff;
+            font-size: 16px;
+            appearance: none; /* إزالة مظهر النظام الافتراضي في بعض المتصفحات */
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M287%20159.2c-2.4%202.4-5.5%203.6-8.7%203.6s-6.3-1.2-8.7-3.6L146.2%2042.8%2020.2%20159.2c-4.8%204.8-12.5%204.8-17.3%200s-4.8-12.5%200-17.3l134.4-134.4c4.8-4.8%2012.5-4.8%2017.3%200l134.4%20134.4c4.8%204.8%204.8%2012.5%200%2017.3z%22%20transform%3D%22rotate(180%20146.2%20146.2)%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 10px top 50%;
+            background-size: 12px;
+            cursor: pointer;
+        }
+        .select-dropdown:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         body {
             display: block; 
             min-height: auto;
@@ -23,8 +47,8 @@
                 <label for="data-file">Upload Data File:</label>
                 <div class="file-drop-area" id="fileDropArea">
                     <input type="file" id="data-file" name="data-file" 
-                           accept=".csv, text/csv" 
-                           data-required="true">
+                            accept=".csv, text/csv" 
+                            data-required="true">
                     <div class="file-placeholder">
                         <div class="upload-icon"></div>
                         <span id="filePlaceholderText">Upload file (CSV only)</span>
@@ -32,11 +56,20 @@
                 </div>
 
                 <label for="target-column">Choose target column name:</label>
-                <input type="text" id="target-column" name="target-column" placeholder="Example: target_column" required>
+                <select id="target-column" name="target-column" required disabled class="select-dropdown">
+                    <option value="" disabled selected>Upload file first to see columns</option>
+                </select>
                 
                 <button type="submit" class="primary-btn wide-btn" id="findFeaturesBtn">
                     Find Features
                 </button>
+                
+                <div style="margin-top: 15px; text-align: center;"> 
+                    <p class="section-description" style="margin-bottom: 2px;">Don't have a file ? generate one</p>
+                    <button type="button" class="primary-btn wide-btn" id="generateRandomBtn">
+                        Generate Random
+                    </button>
+                </div>
 
                 <a href="#" class="help-link" id="helpLink">Don't Know How to Start? click here</a>
             </form>
@@ -65,36 +98,92 @@
             </div>
         </div>
     </div>
-
     <script>
         const form = document.getElementById('uploadForm');
         const fileInput = document.getElementById('data-file');
-        const targetInput = document.getElementById('target-column');
+        const targetSelect = document.getElementById('target-column'); 
         const findFeaturesBtn = document.getElementById('findFeaturesBtn');
+        const generateRandomBtn = document.getElementById('generateRandomBtn'); 
         const placeholderText = document.getElementById('filePlaceholderText');
         const dropArea = document.getElementById('fileDropArea');
         const helpLink = document.getElementById('helpLink');
 
+        async function fetchAndPopulateColumns(file) {
+            targetSelect.innerHTML = '<option value="" disabled selected>Loading columns...</option>';
+            targetSelect.disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/get_columns', {
+                    method: 'POST',
+                    body: formData,
+                });
+                const data = await response.json();
+
+                targetSelect.innerHTML = ''; 
+
+                if (response.ok) {
+                    data.columns.forEach(col => {
+                        const option = document.createElement('option');
+                        option.value = col;
+                        option.textContent = col;
+                        targetSelect.appendChild(option);
+                    });
+                    targetSelect.disabled = false;
+                    if (data.columns.length > 0) {
+                        targetSelect.value = data.columns[0];
+                    }
+                } else {
+                    alert("Error reading columns: " + (data.error || "An unknown error occurred."));
+                    targetSelect.innerHTML = '<option value="" disabled selected>Error loading columns</option>';
+                }
+            } catch (error) {
+                console.error('Network error while fetching columns:', error);
+                alert('A network error occurred while fetching columns.');
+                targetSelect.innerHTML = '<option value="" disabled selected>Network Error</option>';
+            }
+        }
+        
         fileInput.addEventListener('change', function() {
             if (this.files.length > 0) {
                 dropArea.classList.add('file-loaded');
                 placeholderText.textContent = this.files[0].name;
+                fetchAndPopulateColumns(this.files[0]);
             } else {
                 dropArea.classList.remove('file-loaded');
                 placeholderText.textContent = 'Upload file (CSV only)'; 
+                targetSelect.innerHTML = '<option value="" disabled selected>Upload file first to see columns</option>';
+                targetSelect.disabled = true;
             }
         });
 
-        function setLoading(isLoading) {
+        function setLoading(isLoading, isRandom = false) {
+            const btnToControl = isRandom ? generateRandomBtn : findFeaturesBtn;
+            const otherBtn = isRandom ? findFeaturesBtn : generateRandomBtn;
+            
+            btnToControl.disabled = isLoading;
+            otherBtn.disabled = isLoading;
+
             if (isLoading) {
-                findFeaturesBtn.disabled = true;
-                findFeaturesBtn.innerHTML = '<span class="spinner"></span> Running GA...';
+                btnToControl.innerHTML = '<span class="spinner"></span> Running GA...';
             } else {
-                findFeaturesBtn.disabled = false;
                 findFeaturesBtn.innerHTML = 'Find Features';
+                generateRandomBtn.innerHTML = 'Generate Random';
             }
         }
-
+        
+        function handleResults(data) {
+            const resultsData = {
+                bestFeatures: data.bestFeatures, 
+                accuracySelected: (data.accuracySelected * 100), 
+                time: data.time 
+            };
+            const encodedData = encodeURIComponent(JSON.stringify(resultsData));
+            window.parent.loadPage('output.html?data=' + encodedData);
+        }
+        
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -105,9 +194,9 @@
 
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
-            formData.append('target', targetInput.value);
+            formData.append('target', targetSelect.value); 
 
-            setLoading(true);
+            setLoading(true, false); 
 
             try {
                 const response = await fetch('/upload', {
@@ -118,16 +207,7 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    const resultsData = {
-                        bestFeatures: data.bestFeatures, 
-                        accuracySelected: (data.accuracySelected * 100), 
-                        time: data.time 
-                    };
-
-                    const encodedData = encodeURIComponent(JSON.stringify(resultsData));
-
-                    window.parent.loadPage('output.html?data=' + encodedData);
-
+                    handleResults(data);
                 } else {
                     alert("Error from server: " + (data.error || "An unknown error occurred."));
                 }
@@ -135,7 +215,32 @@
                 console.error('Network or processing error:', error);
                 alert('A network error occurred. Please check the server status.');
             } finally {
-                setLoading(false);  
+                setLoading(false, false);  
+            }
+        });
+        
+        generateRandomBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            setLoading(true, true); 
+
+            try {
+                const response = await fetch('/run_ga_direct', {
+                    method: 'GET',
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    handleResults(data);
+                } else {
+                    alert("Error from server: " + (data.error || "An unknown error occurred."));
+                }
+            } catch (error) {
+                console.error('Network or processing error:', error);
+                alert('A network error occurred. Please check the server status.');
+            } finally {
+                setLoading(false, true);  
             }
         });
         
