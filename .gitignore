@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+"__pycache__/" 
+"*.pyc" 
+"venv/" 
+"__pycache__/" 
+=======
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -35,3 +41,4 @@ dist/
 # Frontend build (if applicable)
 frontend/node_modules/
 frontend/build/
+>>>>>>> b3c13c00b65e089864ea6069c53eeaf4431a1aae
