@@ -3,4 +3,4 @@ flask-cors
 pandas
 numpy
 scikit-learn
-category-encoders
+scipy

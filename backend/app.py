@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify,send_file
 from flask_cors import CORS
 from data_utils import read_dataset  
 from ga_algorithm import GAAlgorithm  
-import json
+from generate_random_dataset import generate_dataset
 import os
 import pandas as pd
 
@@ -53,7 +53,6 @@ def upload_file():
             return jsonify({
                 "error": "Please upload a dataset file and specify the target column."
             }), 400
-        get_columns
         df_header = pd.read_csv(file, nrows=0)
         if target not in df_header.columns:
             return jsonify({
@@ -63,45 +62,35 @@ def upload_file():
         
         file.seek(0)
         x, y = read_dataset(file, target)
-        
+        feature_names = [col for col in df_header.columns if col != target]
+
         result = GAAlgorithm.GAOptimize(x, y)
 
+        selected_indices = result["selected_features_indices"]
+        selected_features = [feature_names[i] for i in selected_indices if i < len(feature_names)]
+
         return jsonify({
-    "bestFeatures": result["selected_features_indices"],
-    "time": result["elapsed_time_seconds"],
-    "accuracySelected": result["accuracy"]
+            "bestFeatures": selected_features,
+            "time": result["elapsed_time_seconds"],
+            "accuracySelected": result["accuracy"]
         })
     except Exception as e:
         return jsonify({
             "error": str(e)
         }), 500
 
-#-----------------------------------
-def generate_dataset(num_rows=200, num_cols=40, target_type='binary'):
-    X = np.random.rand(num_rows, num_cols)
-    if target_type == 'binary':
-        y = np.random.randint(0, 2, size=num_rows)
-    elif target_type == 'multiclass':
-        y = np.random.randint(0, 3, size=num_rows)
-    elif target_type == 'continuous':
-        y = np.random.rand(num_rows)
-    else:
-        raise ValueError("target_type must be 'binary', 'multiclass' or 'continuous'")
-    return X, y
-
 @app.route("/run_ga_direct", methods=["GET"])
 def run_ga_direct():
-    X, y = generate_dataset(num_rows=200, num_cols=40, target_type='binary')
+    X, y = generate_dataset()
     result = GAAlgorithm.GAOptimize(X, y)
+    column_names = [f"Feature_{i+1}" for i in range(X.shape[1])]
+    selected_features = [column_names[i] for i in result["selected_features_indices"]]
+    
     return jsonify({
-        "bestFeatures": result["selected_features_indices"],
-        "numSelected": result["num_selected_features"],
-        "fitness": result["fitness"],
-        "accuracySelected": result["accuracy"],
-        "elapsedTime": result["elapsed_time_seconds"]
+        "bestFeatures": selected_features,
+        "time": result["elapsed_time_seconds"],
+        "accuracySelected": result["accuracy"]
     })
-
-#----------------------------------------------    
 
 if __name__ == "__main__":
     app.run(debug=True)
