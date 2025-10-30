@@ -1,12 +1,12 @@
-import numpy as np
-def generate_dataset(num_rows=200, num_cols=40, target_type='binary'):
-    X = np.random.rand(num_rows, num_cols)
-    if target_type == 'binary':
-        y = np.random.randint(0, 2, size=num_rows)
-    elif target_type == 'multiclass':
-        y = np.random.randint(0, 3, size=num_rows)
-    elif target_type == 'continuous':
-        y = np.random.rand(num_rows)
-    else:
-        raise ValueError("target_type must be 'binary', 'multiclass' or 'continuous'")
-    return X, y
+from sklearn.datasets import make_classification
+def generate_dataset():
+    X, y = make_classification(
+    n_samples=500,
+    n_features=40,
+    n_informative=6,
+    n_redundant=2,
+    n_classes=2,
+    random_state=42
+    )
+    result = X,y
+    return result
