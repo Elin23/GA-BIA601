@@ -43,7 +43,19 @@ def get_columns():
         return jsonify({"columns": columns})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
+
+@app.route("/get_link_columns", methods=["POST"])
+def get_columns():
+    link = request.form.get("link")
+    if not link:
+        return jsonify({"error": "Please enter a dataset url."}), 400
+    try:
+        df = pd.read_csv(link, nrows=0)
+        columns = list(df.columns)
+        
+        return jsonify({"columns": columns})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/upload", methods=["POST"])
 def upload_file():
@@ -162,7 +174,7 @@ def run_ga_direct():
     })
 
 # read from a link route
-@app.route("/read_from_link")
+@app.route("/read_from_link", methodes=["POST"])
 def read_from_link() :
     try:
         link = request.form.get("link")

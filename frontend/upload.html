@@ -17,8 +17,8 @@
                 <label for="data-file">Upload Data File:</label>
                 <div class="file-drop-area" id="fileDropArea">
                     <input type="file" id="data-file" name="data-file"
-                            accept=".csv, text/csv"
-                            data-required="true">
+                                accept=".csv, text/csv"
+                                data-required="true">
                     <div class="file-placeholder">
                         <div class="upload-icon"></div>
                         <span id="filePlaceholderText">Upload file (CSV only)</span>
@@ -84,12 +84,40 @@
         const placeholderText = document.getElementById('filePlaceholderText');
         const dropArea = document.getElementById('fileDropArea');
         const helpLink = document.getElementById('helpLink');
+        
+        let linkTypingTimer;
+        const LINK_DELAY = 1000;
 
+        function displayColumns(columns) {
+            targetSelect.innerHTML = '';
+            
+            if (columns && columns.length > 0) {
+                columns.forEach(col => {
+                    const option = document.createElement('option');
+                    option.value = col;
+                    option.textContent = col;
+                    targetSelect.appendChild(option);
+                });
+                targetSelect.disabled = false;
+                targetSelect.value = columns[0]; // Select the first column by default
+            } else {
+                targetSelect.innerHTML = '<option value="" disabled selected>No columns found or file is empty</option>';
+                targetSelect.disabled = true;
+            }
+        }
 
-        async function fetchAndPopulateColumns(file) {
-            targetSelect.innerHTML = '<option value="" disabled selected>Loading columns...</option>';
-            targetSelect.disabled = true;
+        function setColumnLoadingState(isLoading, message = 'Loading columns...') {
+            targetSelect.disabled = isLoading;
+            if (isLoading) {
+                 targetSelect.innerHTML = `<option value="" disabled selected>${message}</option>`;
+            } else if (targetSelect.options.length === 0) {
+                 targetSelect.innerHTML = '<option value="" disabled selected>Upload file or add link first to see columns</option>';
+            }
+        }
 
+        // --- 1. جلب الأعمدة من الملف المرفوع ---
+        async function fetchAndPopulateFileColumns(file) {
+            setColumnLoadingState(true);
             const formData = new FormData();
             formData.append('file', file);
 
@@ -100,59 +128,82 @@
                 });
                 const data = await response.json();
 
-                targetSelect.innerHTML = '';
-
                 if (response.ok) {
-                    data.columns.forEach(col => {
-                        const option = document.createElement('option');
-                        option.value = col;
-                        option.textContent = col;
-                        targetSelect.appendChild(option);
-                    });
-                    targetSelect.disabled = false;
-                    if (data.columns.length > 0) {
-                        targetSelect.value = data.columns[0]; 
-                    }
+                    displayColumns(data.columns);
                 } else {
-                    alert("Error reading columns: " + (data.error || "An unknown error occurred."));
-                    targetSelect.innerHTML = '<option value="" disabled selected>Error loading columns</option>';
+                    alert("Error reading columns from file: " + (data.error || "An unknown error occurred."));
+                    setColumnLoadingState(false, "Error loading columns");
                 }
             } catch (error) {
                 console.error('Network error while fetching columns:', error);
                 alert('A network error occurred while fetching columns.');
-                targetSelect.innerHTML = '<option value="" disabled selected>Network Error</option>';
+                setColumnLoadingState(false, "Network Error");
+            }
+        }
+        
+        // --- 2. جلب الأعمدة من الرابط (الجديدة) ---
+        async function fetchAndPopulateLinkColumns(link) {
+            setColumnLoadingState(true);
+            const formData = new FormData();
+            formData.append('link', link);
+
+            try {
+                const response = await fetch('/get_link_columns', {
+                    method: 'POST',
+                    body: formData,
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayColumns(data.columns);
+                } else {
+                    alert("Error reading columns from link: " + (data.error || "An unknown error occurred."));
+                    setColumnLoadingState(false, "Error loading link columns");
+                }
+            } catch (error) {
+                console.error('Network error while fetching link columns:', error);
+                alert('A network error occurred while fetching link columns.');
+                setColumnLoadingState(false, "Network Error");
             }
         }
 
+        // --- معالج حدث لرفع الملف ---
         fileInput.addEventListener('change', function() {
             if (this.files.length > 0) {
                 dropArea.classList.add('file-loaded');
                 placeholderText.textContent = this.files[0].name;
-                linkInput.value = ''; 
-                fetchAndPopulateColumns(this.files[0]);
+                linkInput.value = ''; // Clear link input
+                fetchAndPopulateFileColumns(this.files[0]);
             } else {
                 dropArea.classList.remove('file-loaded');
                 placeholderText.textContent = 'Upload file (CSV only)';
                 if (linkInput.value === '') {
-                    targetSelect.innerHTML = '<option value="" disabled selected>Upload file or add link first to see columns</option>';
-                    targetSelect.disabled = true;
+                    setColumnLoadingState(false, "Upload file or add link first to see columns");
                 }
             }
         });
 
         linkInput.addEventListener('input', function() {
-            if (this.value.trim() !== '') {
+            clearTimeout(linkTypingTimer);
+            const linkValue = this.value.trim();
+
+            if (linkValue !== '') {
                 fileInput.value = null; 
                 dropArea.classList.remove('file-loaded');
                 placeholderText.textContent = 'Upload file (CSV only)';
-                targetSelect.innerHTML = '<option value="" disabled selected>Select Target Column</option>';
-                targetSelect.disabled = false;
+
+                setColumnLoadingState(true, "Checking link and fetching columns...");
+
+                linkTypingTimer = setTimeout(() => {
+                    fetchAndPopulateLinkColumns(linkValue);
+                }, LINK_DELAY);
+
             } else if (fileInput.files.length === 0) {
-                targetSelect.innerHTML = '<option value="" disabled selected>Upload file or add link first to see columns</option>';
-                targetSelect.disabled = true;
+                setColumnLoadingState(false, "Upload file or add link first to see columns");
             }
         });
         
+        // --- وظيفة التحكم في حالة التحميل والأزرار ---
 
         function setLoading(isLoading, isRandom = false) {
             const btnToControl = isRandom ? generateRandomBtn : findFeaturesBtn;
@@ -163,7 +214,13 @@
             
             fileInput.disabled = isLoading;
             linkInput.disabled = isLoading; 
-            targetSelect.disabled = isLoading;
+
+            if (!isRandom) {
+                targetSelect.disabled = isLoading || targetSelect.options.length === 0;
+            } else {
+                targetSelect.disabled = isLoading;
+            }
+
             dropArea.style.pointerEvents = isLoading ? 'none' : 'auto';
 
             if (isLoading) {
@@ -171,7 +228,8 @@
             } else {
                 findFeaturesBtn.innerHTML = 'Find Features';
                 generateRandomBtn.innerHTML = 'Generate Random';
-                if (fileInput.files.length > 0 || linkInput.value.trim() !== '') {
+                // Re-enable targetSelect if columns are loaded after loading finishes
+                if (targetSelect.options.length > 0 && targetSelect.options[0].value !== "") {
                     targetSelect.disabled = false;
                 }
             }
@@ -207,7 +265,6 @@
                     const linkValue = encodeURIComponent(linkInput.value.trim());
                     const targetValue = encodeURIComponent(targetColumn);
                     
-
                     apiEndpoint = '/read_from_link';
                     method = 'POST'; 
                     body = `link=${linkValue}&target=${targetValue}`;
@@ -250,7 +307,12 @@
                         throw new Error("Server returned incomplete or invalid results array (Expected >= 4 items).");
                     }
                 } else {
-                    alert("Error from server: " + (data.error || "An unknown server error occurred."));
+                    if (data.availableColumns) {
+                        const availableCols = data.availableColumns.join(', ');
+                         alert(`Error: ${data.error}. Available columns are: ${availableCols}`);
+                    } else {
+                        alert("Error from server: " + (data.error || "An unknown server error occurred."));
+                    }
                 }
             } catch (error) {
                 console.error('Network or processing error:', error);
@@ -274,11 +336,14 @@
         helpLink.addEventListener('click', function(e) {
             e.preventDefault();
             if (window.parent.loadAndScroll) {
-                 window.parent.loadAndScroll('home.html', '#user-guide');
+                window.parent.loadAndScroll('home.html', '#user-guide');
             } else {
-                 window.parent.loadPage('home.html');
+                window.parent.loadPage('home.html');
             }
         });
+        
+        setColumnLoadingState(false, "Upload file or add link first to see columns");
+
     </script>
 </body>
 </html>
