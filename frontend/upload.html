@@ -27,7 +27,7 @@
 
                 <div class="link-input-container">
                     <label for="dataset-link" style="margin-top: 20px; font-weight: 500;">OR add a link:</label>
-                    <input type="url" id="dataset-link" name="dataset-link" placeholder="Paste CSV file URL here (e.g., raw GitHub link)" class="input-text-field">
+                    <input type="url" id="dataset-link" name="dataset-link" placeholder="Paste URL here (e.g., raw GitHub link)" class="input-text-field">
                 </div>
 
                 <label for="target-column">Choose target column name:</label>
@@ -99,7 +99,7 @@
                     targetSelect.appendChild(option);
                 });
                 targetSelect.disabled = false;
-                targetSelect.value = columns[0]; // Select the first column by default
+                targetSelect.value = columns[0]; 
             } else {
                 targetSelect.innerHTML = '<option value="" disabled selected>No columns found or file is empty</option>';
                 targetSelect.disabled = true;
@@ -115,7 +115,7 @@
             }
         }
 
-        // --- 1. جلب الأعمدة من الملف المرفوع ---
+
         async function fetchAndPopulateFileColumns(file) {
             setColumnLoadingState(true);
             const formData = new FormData();
@@ -141,7 +141,7 @@
             }
         }
         
-        // --- 2. جلب الأعمدة من الرابط (الجديدة) ---
+
         async function fetchAndPopulateLinkColumns(link) {
             setColumnLoadingState(true);
             const formData = new FormData();
@@ -167,12 +167,12 @@
             }
         }
 
-        // --- معالج حدث لرفع الملف ---
+
         fileInput.addEventListener('change', function() {
             if (this.files.length > 0) {
                 dropArea.classList.add('file-loaded');
                 placeholderText.textContent = this.files[0].name;
-                linkInput.value = ''; // Clear link input
+                linkInput.value = ''; 
                 fetchAndPopulateFileColumns(this.files[0]);
             } else {
                 dropArea.classList.remove('file-loaded');
@@ -203,7 +203,6 @@
             }
         });
         
-        // --- وظيفة التحكم في حالة التحميل والأزرار ---
 
         function setLoading(isLoading, isRandom = false) {
             const btnToControl = isRandom ? generateRandomBtn : findFeaturesBtn;
@@ -228,7 +227,6 @@
             } else {
                 findFeaturesBtn.innerHTML = 'Find Features';
                 generateRandomBtn.innerHTML = 'Generate Random';
-                // Re-enable targetSelect if columns are loaded after loading finishes
                 if (targetSelect.options.length > 0 && targetSelect.options[0].value !== "") {
                     targetSelect.disabled = false;
                 }
