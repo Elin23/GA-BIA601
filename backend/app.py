@@ -190,7 +190,7 @@ def read_from_link() :
                 "error": f"The target column '{target}' does not exist in the dataset.",
                 "availableColumns": list(df_header.columns)
             }), 400
-        link.seek(0)
+        
         x, y = read_dataset(link, target)
         feature_names = [col for col in df_header.columns if col != target]
        #ga algo

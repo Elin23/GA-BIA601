@@ -171,7 +171,7 @@
 
             const accuracyValue = result?.accuracySelected;
             const accuracy = (accuracyValue !== undefined && accuracyValue !== null)
-                ? (parseFloat(accuracyValue) * 100).toFixed(2) + ' %' // ⬅️ التعديل لضرب القيمة بـ 100
+                ? (parseFloat(accuracyValue) * 100).toFixed(2) + ' %'
                 : 'N/A';
             
 
@@ -204,7 +204,7 @@
 
             if (!encodedResults) {
                 errorMessageElement.innerHTML = `
-                    <h2>❌ خطأ في البيانات</h2>
+                    <h2> خطأ في البيانات</h2>
                     <p>لم يتم العثور على نتائج. يرجى العودة لصفحة الرفع وتشغيل الخوارزميات مرة أخرى.</p>
                 `;
                 return;
@@ -230,7 +230,7 @@
             } catch (e) {
                 console.error("Error decoding or displaying results data:", e);
                 errorMessageElement.innerHTML = `
-                    <h2>❌ خطأ في معالجة النتائج</h2>
+                    <h2> خطأ في معالجة النتائج</h2>
                     <p>حدث خطأ أثناء فك تشفير البيانات: ${e.message}</p>
                     <p style="color: #ccc;">(تأكد من أن الخادم قام بإرسال JSON صالح ومشفر بشكل صحيح)</p>
                 `;
