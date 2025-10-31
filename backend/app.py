@@ -2,6 +2,9 @@ from flask import Flask, request, jsonify,send_file
 from flask_cors import CORS
 from data_utils import read_dataset  
 from ga_algorithm import GAAlgorithm  
+from traditional_algorithms.lasso_method import LassoAlgorithm
+from traditional_algorithms.embedded_method import EmbeddedMethod
+from statistical_techniques.statistical_techniques import StatsFeatureSelection
 from generate_random_dataset import generate_dataset
 import os
 import pandas as pd
@@ -62,14 +65,47 @@ def upload_file():
         file.seek(0)
         x, y = read_dataset(file, target)
         feature_names = [col for col in df_header.columns if col != target]
+       #ga algo
         result = GAAlgorithm.GAOptimize(x, y)
         selected_indices = result["selected_features_indices"]
         selected_features = [feature_names[i] for i in selected_indices if i < len(feature_names)]
+
+        # lasso algo
+        lasso_result = LassoAlgorithm.LassoOptimize(x, y)
+        lasso_selected_indices = lasso_result["selected_features_indices"]
+        lasso_selected_features = [feature_names[i] for i in lasso_selected_indices if i < len(feature_names)]
+      
+        #embeded method
+        embd_result = EmbeddedMethod.run(x, y)
+        embd_selected_indices = embd_result["selected_features_indices"]
+        embd_selected_features = [feature_names[i] for i in embd_selected_indices if i < len(feature_names)]
+       
+        #statistical techniques
+        st_result = StatsFeatureSelection.correlation_selection(x, y)
+        st_selected_indices = st_result["selected_features_indices"]
+        st_selected_features = [feature_names[i] for i in st_selected_indices if i < len(feature_names)]
+
         return jsonify({
             "bestFeatures": selected_features,
             "time": result["elapsed_time_seconds"],
             "accuracySelected": result["accuracy"]
+        },
+        {
+            "bestFeatures": lasso_selected_features,
+            "time": lasso_result["elapsed_time_seconds"],
+            "accuracySelected": lasso_result["accuracy"]
+        },
+        {
+            "bestFeatures": embd_selected_features,
+            "time": embd_result["elapsed_time_seconds"],
+            "accuracySelected": embd_result["accuracy"]
+        },
+        {
+            "bestFeatures": st_selected_features,
+            "time": st_result["elapsed_time_seconds"],
+            "accuracySelected": st_result["accuracy"]
         })
+    
     except Exception as e:
         return jsonify({
             "error": str(e)
@@ -84,13 +120,45 @@ def run_ga_direct():
     os.makedirs(results_dir, exist_ok=True)
     dataset_path = os.path.join(results_dir, "generated_dataset.csv")
     df.to_csv(dataset_path, index=False, encoding="utf-8")
+    # ga algo
     result = GAAlgorithm.GAOptimize(X, y)
     column_names = [f"Feature_{i+1}" for i in range(X.shape[1])]
     selected_features = [column_names[i] for i in result["selected_features_indices"]]
+    
+    #lasso algo
+    lasso_result = LassoAlgorithm.LassoOptimize(X, y)
+    lasso_column_names = [f"Feature_{i+1}" for i in range(X.shape[1])]
+    lasso_selected_features = [lasso_column_names[i] for i in lasso_result["selected_features_indices"]]
+    
+    # embedded method
+    embd_result = EmbeddedMethod.run(X, y)
+    embd_column_names = [f"Feature_{i+1}" for i in range(X.shape[1])]
+    embd_selected_features = [embd_column_names[i] for i in embd_result["selected_features_indices"]]
+    
+    #statistical method
+    st_result = StatsFeatureSelection.correlation_selection(X, y)
+    st_column_names = [f"Feature_{i+1}" for i in range(X.shape[1])]
+    st_selected_features = [st_column_names[i] for i in st_result["selected_features_indices"]]
+    
     return jsonify({
         "bestFeatures": selected_features,
         "time": result["elapsed_time_seconds"],
         "accuracySelected": result["accuracy"]
+    },
+    {
+        "bestFeatures": lasso_selected_features,
+        "time": lasso_result["elapsed_time_seconds"],
+        "accuracySelected": lasso_result["accuracy"]
+    },
+    {
+        "bestFeatures": embd_selected_features,
+        "time": embd_result["elapsed_time_seconds"],
+        "accuracySelected": embd_result["accuracy"]
+    },
+    {
+        "bestFeatures": st_selected_features,
+        "time": st_result["elapsed_time_seconds"],
+        "accuracySelected": st_result["accuracy"]
     })
 
 @app.route("/download_generated_dataset", methods=["GET"])
