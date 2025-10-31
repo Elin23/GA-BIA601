@@ -25,9 +25,14 @@
                     </div>
                 </div>
 
+                <div class="link-input-container">
+                    <label for="dataset-link" style="margin-top: 20px; font-weight: 500;">OR add a link:</label>
+                    <input type="url" id="dataset-link" name="dataset-link" placeholder="Paste CSV file URL here (e.g., raw GitHub link)" class="input-text-field">
+                </div>
+
                 <label for="target-column">Choose target column name:</label>
                 <select id="target-column" name="target-column" required disabled class="select-dropdown">
-                    <option value="" disabled selected>Upload file first to see columns</option>
+                    <option value="" disabled selected>Upload file or add link first to see columns</option>
                 </select>
                 
                 <button type="submit" class="primary-btn wide-btn" id="findFeaturesBtn">
@@ -68,15 +73,18 @@
             </div>
         </div>
     </div>
+    
     <script>
         const form = document.getElementById('uploadForm');
         const fileInput = document.getElementById('data-file');
+        const linkInput = document.getElementById('dataset-link'); 
         const targetSelect = document.getElementById('target-column');
         const findFeaturesBtn = document.getElementById('findFeaturesBtn');
         const generateRandomBtn = document.getElementById('generateRandomBtn');
         const placeholderText = document.getElementById('filePlaceholderText');
         const dropArea = document.getElementById('fileDropArea');
         const helpLink = document.getElementById('helpLink');
+
 
         async function fetchAndPopulateColumns(file) {
             targetSelect.innerHTML = '<option value="" disabled selected>Loading columns...</option>';
@@ -103,7 +111,7 @@
                     });
                     targetSelect.disabled = false;
                     if (data.columns.length > 0) {
-                        targetSelect.value = data.columns[0];
+                        targetSelect.value = data.columns[0]; 
                     }
                 } else {
                     alert("Error reading columns: " + (data.error || "An unknown error occurred."));
@@ -120,14 +128,31 @@
             if (this.files.length > 0) {
                 dropArea.classList.add('file-loaded');
                 placeholderText.textContent = this.files[0].name;
+                linkInput.value = ''; 
                 fetchAndPopulateColumns(this.files[0]);
             } else {
                 dropArea.classList.remove('file-loaded');
                 placeholderText.textContent = 'Upload file (CSV only)';
-                targetSelect.innerHTML = '<option value="" disabled selected>Upload file first to see columns</option>';
+                if (linkInput.value === '') {
+                    targetSelect.innerHTML = '<option value="" disabled selected>Upload file or add link first to see columns</option>';
+                    targetSelect.disabled = true;
+                }
+            }
+        });
+
+        linkInput.addEventListener('input', function() {
+            if (this.value.trim() !== '') {
+                fileInput.value = null; 
+                dropArea.classList.remove('file-loaded');
+                placeholderText.textContent = 'Upload file (CSV only)';
+                targetSelect.innerHTML = '<option value="" disabled selected>Select Target Column</option>';
+                targetSelect.disabled = false;
+            } else if (fileInput.files.length === 0) {
+                targetSelect.innerHTML = '<option value="" disabled selected>Upload file or add link first to see columns</option>';
                 targetSelect.disabled = true;
             }
         });
+        
 
         function setLoading(isLoading, isRandom = false) {
             const btnToControl = isRandom ? generateRandomBtn : findFeaturesBtn;
@@ -135,83 +160,115 @@
 
             btnToControl.disabled = isLoading;
             otherBtn.disabled = isLoading;
+            
+            fileInput.disabled = isLoading;
+            linkInput.disabled = isLoading; 
+            targetSelect.disabled = isLoading;
+            dropArea.style.pointerEvents = isLoading ? 'none' : 'auto';
 
             if (isLoading) {
-                btnToControl.innerHTML = '<span class="spinner"></span> Running GA...';
+                btnToControl.innerHTML = '<span class="spinner"></span> Running Algorithms...';
             } else {
                 findFeaturesBtn.innerHTML = 'Find Features';
                 generateRandomBtn.innerHTML = 'Generate Random';
+                if (fileInput.files.length > 0 || linkInput.value.trim() !== '') {
+                    targetSelect.disabled = false;
+                }
             }
         }
 
-        function handleResults(data) {
-            const resultsData = {
-                bestFeatures: data.bestFeatures,
-                accuracySelected: (data.accuracySelected * 100),
-                time: data.time
-            };
-            const encodedData = encodeURIComponent(JSON.stringify(resultsData));
-            window.parent.loadPage('output.html?data=' + encodedData);
+        async function runFeatureSelection(isRandom = false) {
+            let apiEndpoint = '';
+            let method = '';
+            let body = null;
+            let urlParams = '';
+            const targetColumn = targetSelect.value;
+            
+            if (isRandom) {
+                apiEndpoint = '/run_ga_direct';
+                method = 'GET';
+                setLoading(true, true);
+                urlParams = '&generated=true'; 
+
+            } else {
+                if (!targetColumn) {
+                    alert("Please choose a target column.");
+                    return;
+                }
+
+                if (fileInput.files.length > 0) {
+                    apiEndpoint = '/upload'; 
+                    method = 'POST';
+                    body = new FormData();
+                    body.append('file', fileInput.files[0]);
+                    body.append('target', targetColumn);
+                    setLoading(true, false);
+                } else if (linkInput.value.trim() !== '') {
+                    const linkValue = encodeURIComponent(linkInput.value.trim());
+                    const targetValue = encodeURIComponent(targetColumn);
+                    
+
+                    apiEndpoint = '/read_from_link';
+                    method = 'POST'; 
+                    body = `link=${linkValue}&target=${targetValue}`;
+                    
+                    setLoading(true, false);
+                } else {
+                    alert("Please upload a dataset file, add a link, or generate a random one.");
+                    return;
+                }
+            }
+            
+            try {
+                const fetchOptions = {
+                    method: method,
+                    body: body instanceof FormData ? body : body,
+                };
+                
+                if (apiEndpoint === '/read_from_link') {
+                    fetchOptions.headers = {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    };
+                }
+                
+                const response = await fetch(apiEndpoint, fetchOptions);
+
+                const rawData = await response.text();
+                let data;
+                
+                try {
+                    data = JSON.parse(rawData);
+                } catch (e) {
+                    throw new Error(`Invalid JSON response from server. Raw data: ${rawData.substring(0, 100)}...`);
+                }
+
+                if (response.ok) {
+                    if (Array.isArray(data) && data.length >= 4) {
+                        const encodedData = encodeURIComponent(JSON.stringify(data));
+                        window.parent.loadPage('output.html?results=' + encodedData + urlParams); 
+                    } else {
+                        throw new Error("Server returned incomplete or invalid results array (Expected >= 4 items).");
+                    }
+                } else {
+                    alert("Error from server: " + (data.error || "An unknown server error occurred."));
+                }
+            } catch (error) {
+                console.error('Network or processing error:', error);
+                alert(`A critical error occurred: ${error.message}. Please check the server status.`);
+            } finally {
+                setLoading(false, isRandom);
+            }
         }
+
 
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
-
-            if (fileInput.files.length === 0) {
-                alert("Please upload a dataset file (CSV).");
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-            formData.append('target', targetSelect.value);
-
-            setLoading(true, false);
-
-            try {
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    handleResults(data);
-                } else {
-                    alert("Error from server: " + (data.error || "An unknown error occurred."));
-                }
-            } catch (error) {
-                console.error('Network or processing error:', error);
-                alert('A network error occurred. Please check the server status.');
-            } finally {
-                setLoading(false, false);
-            }
+            await runFeatureSelection(false); 
         });
-
+        
         generateRandomBtn.addEventListener('click', async function(e) {
             e.preventDefault();
-
-            setLoading(true, true);
-
-            try {
-                const response = await fetch('/run_ga_direct', {
-                    method: 'GET',
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    handleResults(data);
-                } else {
-                    alert("Error from server: " + (data.error || "An unknown error occurred."));
-                }
-            } catch (error) {
-                console.error('Network or processing error:', error);
-                alert('A network error occurred. Please check the server status.');
-            } finally {
-                setLoading(false, true);
-            }
+            await runFeatureSelection(true);
         });
 
         helpLink.addEventListener('click', function(e) {

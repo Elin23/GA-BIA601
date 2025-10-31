@@ -3,36 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GA Results</title>
+    <title>Algorithms Results Comparison</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .algorithm-section {
+            margin-bottom: 60px; 
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color); 
+        }
+        .algorithm-section:first-of-type {
+            border-top: none; 
+        }
+        .algorithm-title-h2 {
+            font-size: 2em;
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+    </style>
 </head>
 <body>
     <div class="page-content output-page">
         <h2 class="output-title" style="text-align: center; margin-bottom: 50px;">
-            Your Result using <span class="logo-inline">Genetic Algorithm</span> on your dataset is as follows:
+            Your Feature Selection Results Comparison
         </h2>
 
         <div style="text-align: center; margin-bottom: 40px;">
             <button id="tryAgainBtn" class="primary-btn">Try Again</button>
+            <button id="downloadFileBtn" class="primary-btn" style="display: none; background-color: #4CAF50; margin-left: 20px;">Download File</button>
         </div>
 
-        <div class="results-grid">
-            
-            <div class="result-card">
-                <h3>Best Features</h3>
-                <div id="bestFeatures" class="result-value">N/A</div>
-            </div>
+        <div class="algorithm-section">
+            <h2 class="algorithm-title-h2">
+                Your Result using <span class="logo-inline">Genetic Algorithm</span> is as follows:
+            </h2>
+            <div class="results-grid">
+                <div class="result-card">
+                    <h3>Best Features</h3>
+                    <div id="GA_bestFeatures" class="result-value">N/A</div>
+                </div>
 
-            <div class="result-card">
-                <h3>Accuracy</h3>
-                <div id="accuracy" class="result-value">N/A</div>
-            </div>
+                <div class="result-card">
+                    <h3>Accuracy</h3>
+                    <div id="GA_accuracy" class="result-value">N/A</div>
+                </div>
 
-            <div class="result-card">
-                <h3>Time Elapsed</h3>
-                <div id="timeElapsed" class="result-value">N/A</div>
+                <div class="result-card">
+                    <h3>Time Elapsed</h3>
+                    <div id="GA_timeElapsed" class="result-value">N/A</div>
+                </div>
             </div>
         </div>
+
+        <div class="algorithm-section">
+            <h2 class="algorithm-title-h2">
+                Your Result using <span class="logo-inline">Lasso Method</span> is as follows:
+            </h2>
+            <div class="results-grid">
+                <div class="result-card">
+                    <h3>Best Features</h3>
+                    <div id="Lasso_bestFeatures" class="result-value">N/A</div>
+                </div>
+
+                <div class="result-card">
+                    <h3>Accuracy</h3>
+                    <div id="Lasso_accuracy" class="result-value">N/A</div>
+                </div>
+
+                <div class="result-card">
+                    <h3>Time Elapsed</h3>
+                    <div id="Lasso_timeElapsed" class="result-value">N/A</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="algorithm-section">
+            <h2 class="algorithm-title-h2">
+                Your Result using <span class="logo-inline">Embedded Method</span> is as follows:
+            </h2>
+            <div class="results-grid">
+                <div class="result-card">
+                    <h3>Best Features</h3>
+                    <div id="Embedded_bestFeatures" class="result-value">N/A</div>
+                </div>
+
+                <div class="result-card">
+                    <h3>Accuracy</h3>
+                    <div id="Embedded_accuracy" class="result-value">N/A</div>
+                </div>
+
+                <div class="result-card">
+                    <h3>Time Elapsed</h3>
+                    <div id="Embedded_timeElapsed" class="result-value">N/A</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="algorithm-section">
+            <h2 class="algorithm-title-h2">
+                Your Result using <span class="logo-inline">Statistical Techniques</span> is as follows:
+            </h2>
+            <div class="results-grid">
+                <div class="result-card">
+                    <h3>Best Features</h3>
+                    <div id="Stats_bestFeatures" class="result-value">N/A</div>
+                </div>
+
+                <div class="result-card">
+                    <h3>Accuracy</h3>
+                    <div id="Stats_accuracy" class="result-value">N/A</div>
+                </div>
+
+                <div class="result-card">
+                    <h3>Time Elapsed</h3>
+                    <div id="Stats_timeElapsed" class="result-value">N/A</div>
+                </div>
+            </div>
+        </div>
+        
+        <p id="errorMessage" style="text-align: center; color: red; margin-top: 30px; font-weight: bold;"></p>
     </div>
     
     <div class="site-footer">
@@ -59,47 +148,113 @@
     </div>
 
     <script>
-        function displayResults() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const dataString = urlParams.get('data');
+        
+        const ALGORITHM_IDS = [
+            'GA',      
+            'Lasso',    
+            'Embedded',
+            'Stats'  
+        ];
+
+
+        
+        function updateResultCard(idPrefix, result) {
+            const featuresElement = document.getElementById(`${idPrefix}_bestFeatures`);
+            const accuracyElement = document.getElementById(`${idPrefix}_accuracy`);
+            const timeElement = document.getElementById(`${idPrefix}_timeElapsed`);
+
+
+            const features = Array.isArray(result?.bestFeatures) 
+                ? result.bestFeatures.join(', ')
+                : result?.bestFeatures || 'N/A';
             
-            if (!dataString) {
-                document.getElementById('bestFeatures').textContent = 'Error';
-                document.getElementById('accuracy').textContent = 'Error';
-                document.getElementById('timeElapsed').textContent = 'Error';
-                return;
+
+            const accuracyValue = result?.accuracySelected;
+            const accuracy = (accuracyValue !== undefined && accuracyValue !== null)
+                ? (parseFloat(accuracyValue) * 100).toFixed(2) + ' %' // ⬅️ التعديل لضرب القيمة بـ 100
+                : 'N/A';
+            
+
+                const timeValue = result?.time;
+            const time = (timeValue !== undefined && timeValue !== null)
+                ? parseFloat(timeValue).toFixed(2) + ' s' 
+                : 'N/A';
+            
+            if (featuresElement) featuresElement.textContent = features;
+            if (accuracyElement) accuracyElement.textContent = accuracy;
+            if (timeElement) timeElement.textContent = time;
+        }
+
+
+
+         function loadResultsFromURL() {
+            const errorMessageElement = document.getElementById('errorMessage');
+            const downloadFileBtn = document.getElementById('downloadFileBtn');
+            const urlParams = new URLSearchParams(window.location.search);
+            const encodedResults = urlParams.get('results'); 
+            const isGenerated = urlParams.get('generated'); 
+
+            errorMessageElement.textContent = ''; 
+            downloadFileBtn.style.display = 'none'; 
+
+
+            if (isGenerated === 'true') {
+                downloadFileBtn.style.display = 'inline-block';
             }
 
+            if (!encodedResults) {
+                errorMessageElement.innerHTML = `
+                    <h2>❌ خطأ في البيانات</h2>
+                    <p>لم يتم العثور على نتائج. يرجى العودة لصفحة الرفع وتشغيل الخوارزميات مرة أخرى.</p>
+                `;
+                return;
+            }
+            
             try {
-                const results = JSON.parse(decodeURIComponent(dataString));
+
+                const decodedJson = decodeURIComponent(encodedResults);
+                const rawResults = JSON.parse(decodedJson);
                 
-                const features = Array.isArray(results.bestFeatures) 
-                    ? results.bestFeatures.join(', ')
-                    : results.bestFeatures || 'N/A';
-                
-                const accuracy = (results.accuracySelected !== undefined && results.accuracySelected !== null)
-                    ? parseFloat(results.accuracySelected).toFixed(2) + ' %' 
-                    : 'N/A';
-                
-                const time = (results.time !== undefined && results.time !== null)
-                    ? parseFloat(results.time).toFixed(2) + ' s' 
-                    : 'N/A';
-                
-                document.getElementById('bestFeatures').textContent = features;
-                document.getElementById('accuracy').textContent = accuracy;
-                document.getElementById('timeElapsed').textContent = time;
+                if (!Array.isArray(rawResults) || rawResults.length < 4) {
+                     throw new Error("Invalid results structure (Expected array of 4 items).");
+                }
+
+
+                rawResults.forEach((result, index) => {
+                    const idPrefix = ALGORITHM_IDS[index];
+                    if (idPrefix) {
+                        updateResultCard(idPrefix, result);
+                    }
+                });
 
             } catch (e) {
-                console.error("Error parsing results data:", e);
-                document.getElementById('bestFeatures').textContent = 'Parse Error';
+                console.error("Error decoding or displaying results data:", e);
+                errorMessageElement.innerHTML = `
+                    <h2>❌ خطأ في معالجة النتائج</h2>
+                    <p>حدث خطأ أثناء فك تشفير البيانات: ${e.message}</p>
+                    <p style="color: #ccc;">(تأكد من أن الخادم قام بإرسال JSON صالح ومشفر بشكل صحيح)</p>
+                `;
             }
         }
 
+
         document.getElementById('tryAgainBtn').addEventListener('click', function() {
-            window.parent.loadPage('upload.html'); 
+            if (window.parent && window.parent.loadPage) {
+                window.parent.loadPage('upload.html'); 
+            } else {
+                window.location.href = 'upload.html'; 
+            }
+        });
+        
+
+        document.getElementById('downloadFileBtn').addEventListener('click', function() {
+
+            window.location.href = '/download_generated_dataset'; 
         });
 
-        displayResults();
+
+
+        loadResultsFromURL();
     </script>
 </body>
 </html>
