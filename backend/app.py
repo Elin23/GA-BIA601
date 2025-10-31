@@ -44,7 +44,6 @@ def get_columns():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-
 @app.route("/upload", methods=["POST"])
 def upload_file():
     try:
@@ -162,7 +161,7 @@ def run_ga_direct():
     })
 
 # read from a link route
-@app.route("/read_from_link")
+@app.route("/read_from_link", methodes=["POST"])
 def read_from_link() :
     try:
         link = request.form.get("link")
