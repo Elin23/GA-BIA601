@@ -22,10 +22,8 @@ class StatsFeatureSelection:
                 r = 0 
             correlations.append(abs(r))
 
-        
         selected_indices = np.argsort(correlations)[-top_k:][::-1].tolist()
 
-    
         X_selected = X[:, selected_indices]
         scaler = StandardScaler()
         X_selected_scaled = scaler.fit_transform(X_selected)
