@@ -515,6 +515,7 @@ input[type="text"], input[type="url"], select {
     display: flex;
     gap: 40px;
     align-items: flex-start;
+    justify-content: space-between;
     padding-bottom: 50px;
 }
 
@@ -573,17 +574,15 @@ input[type="text"], input[type="url"], select {
 
     .about-content-flex {
         flex-direction: column;
+        align-items: center;
+        height: fit-content;
+    } 
+    .about-content-flex .about-image-container{
+        display: none;
     }
 
     .about-text-content {
         max-width: 100%;
-    }
-
-    .about-image-container {
-        width: 100%;
-        height: 250px;
-        order: -1;
-        margin-bottom: 20px;
     }
 }
 
