@@ -15,7 +15,7 @@ class LassoAlgorithm:
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
          
-        C_values: List[float] = [10.0, 5.0, 2.0, 1.0, 0.1, 0.05, 0.01, 0.005, 0.001]  
+        C_values: List[float] = [1.0, 0.1, 0.05, 0.01, 0.005, 0.001]  
         
         best_accuracy = 0.0 
         best_C = None       
