@@ -28,7 +28,7 @@ body {
     flex-direction: column;
     overflow-y: auto;
 }
-/* Styles from <style> tag in HTML */
+
 body {
     display: flex;
     min-height: 100vh;
@@ -38,7 +38,7 @@ body {
 .select-dropdown {
     width: 100%;
     padding: 12px 15px;
-    margin: 8px 0 10px 0;
+    margin: 8px 0 0 0;
     display: inline-block;
     border: 1px solid #4a4a6e;
     border-radius: 6px;
@@ -57,8 +57,6 @@ body {
     opacity: 0.6;
     cursor: not-allowed;
 }
-/* End of <style> tag styles */
-
 
 .content-frame {
     border: none;
@@ -225,7 +223,7 @@ body {
 .section-description {
     color: #bdbdbd;
     font-size: 1em;
-    margin-bottom: 30px;
+    margin-bottom: 5px;
     line-height: 1.6;
 }
 
@@ -292,7 +290,7 @@ body {
     font-size: 0;
 }
 
-input[type="text"], select {
+input[type="text"], input[type="url"], select { 
     width: 100%;
     padding: 12px;
     border-radius: 8px;
@@ -308,10 +306,38 @@ input[type="text"], select {
     padding-right: 12px;
 }
 
+.form-container .input-text-field {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 8px 0 10px 0;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background-color: var(--card-background); 
+    color: var(--text-light);
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+.form-container .input-text-field:focus {
+    border-color: var(--text-highlight);
+    outline: none;
+    box-shadow: 0 0 0 1px var(--text-highlight);
+}
+
+.link-input-container {
+    margin-bottom: 25px; 
+    margin-top: 15px;
+}
+
+.link-input-container label {
+    margin-top: 0; 
+}
+
 .wide-btn {
     width: 100%;
     background-color: var(--light-blue-button);
-    margin-top: 30px;
+    margin-top: 10px;
     padding: 14px 25px;
     font-size: 1.2em;
 }
